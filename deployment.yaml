@@ -14,7 +14,7 @@ app: java-app
 spec:
 containers:
 - name: java-app
-image: harika1305/java-app:latest
+image: harika1305/voting_system:latest
 ---
 apiVersion: v1
 kind: Service
