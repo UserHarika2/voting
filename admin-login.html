@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoteFlow - Admin Login</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="admin-page">
+    <div class="container">
+        <div class="card login-card">
+            <div class="login-title" style="color: #0074D9;">🔐 Admin Panel</div>
+            
+            <div id="alert" class="alert"></div>
+            
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter admin username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="adminPassword">Password</label>
+                    <input type="password" id="adminPassword" name="adminPassword" placeholder="Enter admin password" required>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Admin Login</button>
+                </div>
+            </form>
+            
+            <div class="login-footer">
+                Back to
+                <a href="index.html">Voter Login</a>
+            </div>
+            
+            <div class="login-footer">
+                View results?
+                <a href="results.html">View Results</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('adminPassword').value.trim();
+            
+            // Validation
+            if (!username || !password) {
+                UI.showAlert('Please fill in all fields.', 'error');
+                return;
+            }
+            
+            // Attempt login
+            const result = Auth.adminLogin(username, password);
+            
+            if (result.success) {
+                UI.showAlert('Admin login successful! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'admin.html';
+                }, 1500);
+            } else {
+                UI.showAlert(result.message, 'error');
+            }
+        });
+    </script>
+</body>
+</html>
