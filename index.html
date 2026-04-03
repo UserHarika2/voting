@@ -1,72 +1,476 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VoteFlow - Voter Login</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body class="voter-page">
-    <div class="container">
-        <div class="card login-card">
-            <div class="login-title">🗳️ VoteFlow</div>
-            
-            <div id="alert" class="alert"></div>
-            
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="voterId">Voter ID</label>
-                    <input type="text" id="voterId" name="voterId" placeholder="Enter your Voter ID (e.g., V001)" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
-                </div>
-                
-                <div class="form-group">
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
-                </div>
-            </form>
-            
-            <div class="login-footer">
-                Want to view results?
-                <a href="results.html">View Results</a>
-            </div>
-            
-            <div class="login-footer">
-                Admin panel?
-                <a href="admin-login.html">Admin Login</a>
-            </div>
-        </div>
-    </div>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>VoteSphere | Secure Digital Voting</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    }
 
-    <script src="js/app.js"></script>
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const voterId = document.getElementById('voterId').value.trim();
-            const password = document.getElementById('password').value.trim();
-            
-            // Validation
-            if (!voterId || !password) {
-                UI.showAlert('Please fill in all fields.', 'error');
-                return;
-            }
-            
-            // Attempt login
-            const result = Auth.voterLogin(voterId, password);
-            
-            if (result.success) {
-                UI.showAlert('Login successful! Redirecting...', 'success');
-                setTimeout(() => {
-                    window.location.href = 'voter.html';
-                }, 1500);
-            } else {
-                UI.showAlert(result.message, 'error');
-            }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0B3B3F 0%, #1E6B5E 50%, #F2C94C 100%);
+      background-attachment: fixed;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    /* main container card */
+    .glass-container {
+      max-width: 1300px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(2px);
+      border-radius: 2rem;
+      box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.3);
+      overflow: hidden;
+      padding: 2rem 2rem 2rem 2rem;
+      transition: all 0.3s ease;
+    }
+
+    h1, h2, h3 {
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    .header-gradient {
+      background: linear-gradient(120deg, #0F4C5C, #228B6F);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: none;
+    }
+
+    .btn {
+      border: none;
+      padding: 0.7rem 1.6rem;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .btn-primary {
+      background: linear-gradient(95deg, #1E6B5E, #F2A900);
+      color: white;
+      border: none;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);
+      filter: brightness(1.02);
+    }
+    .btn-secondary {
+      background: #2C3E3F;
+      color: #F5F2E9;
+    }
+    .btn-secondary:hover {
+      background: #1F2F30;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid #1E6B5E;
+      color: #1E6B5E;
+    }
+    .btn-outline:hover {
+      background: #1E6B5E20;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 28px;
+      border: 1px solid #ccc;
+      background: white;
+      font-size: 0.9rem;
+      transition: 0.2s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #F2A900;
+      box-shadow: 0 0 0 3px rgba(242,169,0,0.2);
+    }
+
+    .card-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.8rem;
+      margin: 1.5rem 0;
+      justify-content: center;
+    }
+
+    .candidate-card {
+      background: white;
+      border-radius: 28px;
+      padding: 1.2rem;
+      width: 240px;
+      text-align: center;
+      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s;
+      border: 1px solid #e2e8f0;
+    }
+    .candidate-card:hover {
+      transform: translateY(-6px);
+      border-color: #F2A900;
+    }
+    .candidate-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #0F4C5C, #CF9F2E);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .vote-btn {
+      margin-top: 1rem;
+      background: #1E6B5E;
+      color: white;
+      width: 100%;
+    }
+
+    .status-msg {
+      background: #e9f7ef;
+      padding: 0.7rem;
+      border-radius: 60px;
+      text-align: center;
+      margin: 1rem 0;
+    }
+
+    .admin-panel, .voter-panel {
+      display: none;
+    }
+    .active-panel {
+      display: block;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 1rem;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 0.8rem 1.8rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 40px;
+      transition: 0.2s;
+      color: #2D4A4A;
+    }
+    .tab-btn.active {
+      background: linear-gradient(95deg, #1E6B5E, #F2A900);
+      color: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255,255,240,0.7);
+      border-radius: 1.5rem;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background: #1E6B5E;
+      color: white;
+    }
+    .result-stats {
+      font-weight: bold;
+      color: #1E6B5E;
+    }
+    footer {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.75rem;
+      color: #2c5a55;
+    }
+    @media (max-width: 680px) {
+      .glass-container { padding: 1.2rem; }
+      .candidate-card { width: 100%; max-width: 260px; }
+    }
+  </style>
+</head>
+<body>
+<div class="glass-container" id="appRoot">
+  <h1 style="text-align:center;"> VoteSphere · <span class="header-gradient">Decentralized Trust</span></h1>
+  <div class="nav-tabs">
+    <button class="tab-btn active" data-tab="voter"> Voter Login</button>
+    <button class="tab-btn" data-tab="admin"> Admin Panel</button>
+    <button class="tab-btn" data-tab="results">Live Results</button>
+  </div>
+
+  <!-- VOTER PANEL (login + voting) -->
+  <div id="voterPanel" class="voter-panel active-panel">
+    <div id="voterLoginArea">
+      <div style="background:#EFF7F2; border-radius: 2rem; padding: 1.5rem; max-width: 450px; margin: 0 auto;">
+        <h3> Voter Authentication</h3>
+        <input type="text" id="voterId" placeholder="Voter ID" style="margin: 0.8rem 0;">
+        <input type="password" id="voterPass" placeholder="Password">
+        <button id="voterLoginBtn" class="btn btn-primary" style="margin-top: 1rem; width:100%">Login to Vote</button>
+
+      </div>
+    </div>
+    <div id="votingArea" style="display:none;">
+      <div class="status-msg" id="voterStatusMsg"> Welcome <span id="welcomeVoterName"></span> | Your vote is private</div>
+      <h2>🏛️ Choose your candidate</h2>
+      <div id="candidatesList" class="card-grid"></div>
+      <button id="logoutVoterBtn" class="btn btn-secondary" style="margin-top: 20px;">↺ Logout</button>
+    </div>
+  </div>
+
+  <!-- ADMIN PANEL (add candidates) -->
+  <div id="adminPanel" class="admin-panel">
+    <div id="adminLoginArea">
+      <div style="background:#EFF7F2; border-radius: 2rem; padding: 1.5rem; max-width: 450px; margin: 0 auto;">
+        <h3> Admin Secure Login</h3>
+        <input type="text" id="adminUsername" placeholder="Username" style="margin:0.8rem 0;">
+        <input type="password" id="adminPassword" placeholder="Password">
+        <button id="adminLoginBtn" class="btn btn-primary" style="width:100%">Login as Admin</button>
+      </div>
+    </div>
+    <div id="adminDashboard" style="display:none;">
+      <div class="status-msg"> Admin Control  Add new candidate</div>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: end;">
+        <div style="flex:1"><input type="text" id="candName" placeholder="Candidate full name"></div>
+        <div style="flex:1"><input type="text" id="candParty" placeholder="Party / Slogan"></div>
+        <div><button id="addCandidateBtn" class="btn btn-primary"> Add Candidate</button></div>
+      </div>
+      <h3 style="margin-top: 2rem;"> Current Candidates</h3>
+      <div id="adminCandList"></div>
+      <button id="logoutAdminBtn" class="btn btn-secondary" style="margin-top: 1rem;"> Logout</button>
+    </div>
+  </div>
+
+  <!-- RESULTS PANEL (public) -->
+  <div id="resultsPanel" class="admin-panel">
+    <h2> Real-time Voting Results</h2>
+    <div id="resultsTableContainer" style="overflow-x: auto; margin-top: 1rem;"></div>
+    <button id="refreshResultsBtn" class="btn btn-outline" style="margin-top:1rem;"> Refresh Results</button>
+  </div>
+  <footer>⚡ secure voting | one voter one vote | encrypted tally</footer>
+</div>
+
+<script>
+  // ---------- API URLs (relative to current folder) ----------
+  const API_BASE = '';  // same directory
+
+  // Helper: fetch wrapper
+  async function apiRequest(endpoint, method = 'GET', body = null) {
+    const options = {
+      method: method,
+      headers: { 'Content-Type': 'application/json' }
+    };
+    if (body) options.body = JSON.stringify(body);
+    const res = await fetch(`${API_BASE}${endpoint}`, options);
+    return await res.json();
+  }
+
+  // DOM elements
+  const voterPanelDiv = document.getElementById('voterPanel');
+  const adminPanelDiv = document.getElementById('adminPanel');
+  const resultsPanelDiv = document.getElementById('resultsPanel');
+  const tabs = document.querySelectorAll('.tab-btn');
+
+  let currentVoter = null;     // store voter id
+  let currentAdmin = false;
+
+  // ----- Helper: load candidates for voting UI -----
+  async function loadVotingCandidates() {
+    if (!currentVoter) return;
+    const data = await apiRequest('api.php?action=getCandidates');
+    if (data.success && data.candidates) {
+      const container = document.getElementById('candidatesList');
+      container.innerHTML = '';
+      data.candidates.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'candidate-card';
+        card.innerHTML = `
+          <div class="candidate-name">${escapeHtml(c.name)}</div>
+          <div style="font-size:0.85rem; color:#2c6e5e;">${escapeHtml(c.party)}</div>
+          <button data-id="${c.id}" class="btn vote-btn castVoteBtn"> Vote Now</button>
+        `;
+        container.appendChild(card);
+      });
+      // attach events
+      document.querySelectorAll('.castVoteBtn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const candidateId = btn.getAttribute('data-id');
+          const result = await apiRequest('api.php?action=castVote', 'POST', { voter_id: currentVoter, candidate_id: candidateId });
+          const msgDiv = document.getElementById('voterStatusMsg');
+          if (result.success) {
+            msgDiv.innerHTML = ` ${result.message}  Thank you!`;
+            await loadVotingCandidates(); // refresh maybe disable voting? but backend prevents double vote
+            // also disable vote buttons after vote? but backend prevents duplicate anyway
+            document.querySelectorAll('.castVoteBtn').forEach(b => b.disabled = true);
+          } else {
+            msgDiv.innerHTML = ` ${result.message}`;
+          }
+          setTimeout(() => {
+            if(document.getElementById('voterStatusMsg')) 
+              document.getElementById('voterStatusMsg').innerHTML = ` ${currentVoter} | Your vote is final.`;
+          }, 2500);
         });
-    </script>
-</body>
-</html>
+      });
+    }
+  }
+
+  // load admin candidate list
+  async function loadAdminCandidates() {
+    const data = await apiRequest('api.php?action=getCandidates');
+    if (data.success && data.candidates) {
+      const container = document.getElementById('adminCandList');
+      container.innerHTML = '<ul style="list-style:none; padding:0;">' + data.candidates.map(c => `<li style="background:white; margin:0.5rem 0; padding:0.7rem 1rem; border-radius:60px;">📌 <strong>${escapeHtml(c.name)}</strong> (${escapeHtml(c.party)}) - ID:${c.id}</li>`).join('') + '</ul>';
+    } else {
+      document.getElementById('adminCandList').innerHTML = '<p>No candidates yet</p>';
+    }
+  }
+
+  async function loadResults() {
+    const data = await apiRequest('api.php?action=getResults');
+    if (data.success && data.results) {
+      let html = `<table><thead><tr><th>Candidate</th><th>Party</th><th>Votes Received</th><th>Status</th></tr></thead><tbody>`;
+      let total = 0;
+      data.results.forEach(r => { total += parseInt(r.votes); });
+      data.results.forEach(r => {
+        let percent = total > 0 ? ((r.votes / total)*100).toFixed(1) : '0';
+        html += `<tr>
+          <td><strong>${escapeHtml(r.name)}</strong></td>
+          <td>${escapeHtml(r.party)}</td>
+          <td class="result-stats">${r.votes} votes (${percent}%)</td>
+          <td>${r.votes > 0 ? '🏆' : '⚪'}</td>
+        </tr>`;
+      });
+      html += `<tr style="background:#f9eec1;"><td colspan="2"><strong>Total Votes Cast</strong></td><td colspan="2"><strong>${total}</strong></td></tr>`;
+      html += `</tbody></table>`;
+      document.getElementById('resultsTableContainer').innerHTML = html;
+    } else {
+      document.getElementById('resultsTableContainer').innerHTML = '<p> No results available</p>';
+    }
+  }
+
+  // Helper: escape html
+  function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+  // Voter Login
+  document.getElementById('voterLoginBtn')?.addEventListener('click', async () => {
+    const voterId = document.getElementById('voterId').value.trim();
+    const password = document.getElementById('voterPass').value;
+    const res = await apiRequest('api.php?action=voterLogin', 'POST', { voter_id: voterId, password: password });
+    if (res.success) {
+      currentVoter = voterId;
+      document.getElementById('welcomeVoterName').innerText = voterId;
+      document.getElementById('voterLoginArea').style.display = 'none';
+      document.getElementById('votingArea').style.display = 'block';
+      await loadVotingCandidates();
+      // check if already voted to show message
+      const check = await apiRequest(`api.php?action=hasVoted&voter_id=${voterId}`);
+      if (check.voted === true) {
+        document.getElementById('voterStatusMsg').innerHTML = `ℹ You have already voted. Thank you for participation.`;
+        document.querySelectorAll('.castVoteBtn').forEach(btn => btn.disabled = true);
+      } else {
+        document.getElementById('voterStatusMsg').innerHTML = ` Welcome ${voterId}, select your favorite candidate.`;
+      }
+    } else {
+      alert('Login failed: ' + res.message);
+    }
+  });
+
+  document.getElementById('logoutVoterBtn')?.addEventListener('click', () => {
+    currentVoter = null;
+    document.getElementById('voterLoginArea').style.display = 'block';
+    document.getElementById('votingArea').style.display = 'none';
+    document.getElementById('voterId').value = '';
+    document.getElementById('voterPass').value = '';
+  });
+
+  // Admin login
+  document.getElementById('adminLoginBtn')?.addEventListener('click', async () => {
+    const user = document.getElementById('adminUsername').value;
+    const pwd = document.getElementById('adminPassword').value;
+    const res = await apiRequest('api.php?action=adminLogin', 'POST', { username: user, password: pwd });
+    if (res.success) {
+      currentAdmin = true;
+      document.getElementById('adminLoginArea').style.display = 'none';
+      document.getElementById('adminDashboard').style.display = 'block';
+      await loadAdminCandidates();
+    } else {
+      alert('Admin login failed');
+    }
+  });
+
+  document.getElementById('logoutAdminBtn')?.addEventListener('click', () => {
+    currentAdmin = false;
+    document.getElementById('adminLoginArea').style.display = 'block';
+    document.getElementById('adminDashboard').style.display = 'none';
+    document.getElementById('adminUsername').value = '';
+    document.getElementById('adminPassword').value = '';
+  });
+
+  document.getElementById('addCandidateBtn')?.addEventListener('click', async () => {
+    const name = document.getElementById('candName').value.trim();
+    const party = document.getElementById('candParty').value.trim();
+    if (!name || !party) { alert('Enter name & party'); return; }
+    const res = await apiRequest('api.php?action=addCandidate', 'POST', { name: name, party: party });
+    if (res.success) {
+      alert('Candidate added!');
+      document.getElementById('candName').value = '';
+      document.getElementById('candParty').value = '';
+      await loadAdminCandidates();
+      // also refresh results if visible, but fine.
+    } else {
+      alert(res.message);
+    }
+  });
+
+  // Results refresh
+  document.getElementById('refreshResultsBtn')?.addEventListener('click', async () => {
+    await loadResults();
+  });
+
+  // Tab switching
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.getAttribute('data-tab');
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      // hide all panels
+      document.getElementById('voterPanel').classList.remove('active-panel');
+      document.getElementById('adminPanel').classList.remove('active-panel');
+      document.getElementById('resultsPanel').classList.remove('active-panel');
+      if (target === 'voter') {
+        document.getElementById('voterPanel').classList.add('active-panel');
+      } else if (target === 'admin') {
+        document.getElementById('adminPanel').classList.add('active-panel');
+      } else if (target === 'results') {
+        document.getElementById('resultsPanel').classList.add('active-panel');
+        loadResults();
+      }
+    });
+  });
+
+  // load results if results tab opened initially? we can call on first results load but not needed
+  // but ensure that if results tab is clicked after load, refreshResultsBtn works.
+  // extra: preload results for panel after page loads
+  window.addEventListener('load', () => {
+    // set default view voter login
+    loadResults(); // preload for results tab if needed later
+  });
+</script>
