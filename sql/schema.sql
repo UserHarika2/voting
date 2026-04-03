@@ -4,16 +4,16 @@
 -- =====================================================
 
 -- Drop existing database (if you want to start fresh)
--- DROP DATABASE IF EXISTS voteflow;
+-- DROP DATABASE IF EXISTS voteflow_app;
 
 -- Create database
-CREATE DATABASE IF NOT EXISTS voteflow;
-USE voteflow;
+CREATE DATABASE IF NOT EXISTS voteflow_app;
+USE voteflow_app;
 
 -- =====================================================
 -- 1. VOTERS TABLE
 -- =====================================================
-CREATE TABLE IF NOT EXISTS voters (
+CREATE TABLE IF NOT EXISTS app_voters (
     voter_id VARCHAR(50) PRIMARY KEY,
     voter_name VARCHAR(100) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
@@ -23,13 +23,13 @@ CREATE TABLE IF NOT EXISTS voters (
     voted_for INT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP NULL,
-    FOREIGN KEY (voted_for) REFERENCES candidates(candidate_id) ON DELETE SET NULL
+    FOREIGN KEY (voted_for) REFERENCES app_candidates(candidate_id) ON DELETE SET NULL
 );
 
 -- =====================================================
 -- 2. CANDIDATES TABLE
 -- =====================================================
-CREATE TABLE IF NOT EXISTS candidates (
+CREATE TABLE IF NOT EXISTS app_candidates (
     candidate_id INT AUTO_INCREMENT PRIMARY KEY,
     candidate_name VARCHAR(150) NOT NULL,
     party_name VARCHAR(100),
@@ -44,22 +44,22 @@ CREATE TABLE IF NOT EXISTS candidates (
 -- =====================================================
 -- 3. VOTES TABLE (Audit trail)
 -- =====================================================
-CREATE TABLE IF NOT EXISTS votes (
+CREATE TABLE IF NOT EXISTS app_votes (
     vote_id INT AUTO_INCREMENT PRIMARY KEY,
     voter_id VARCHAR(50) NOT NULL,
     candidate_id INT NOT NULL,
     vote_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ip_address VARCHAR(45),
     user_agent VARCHAR(255),
-    FOREIGN KEY (voter_id) REFERENCES voters(voter_id) ON DELETE CASCADE,
-    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
+    FOREIGN KEY (voter_id) REFERENCES app_voters(voter_id) ON DELETE CASCADE,
+    FOREIGN KEY (candidate_id) REFERENCES app_candidates(candidate_id) ON DELETE CASCADE,
     UNIQUE KEY unique_voter_vote (voter_id)
 );
 
 -- =====================================================
 -- 4. ADMIN USERS TABLE
 -- =====================================================
-CREATE TABLE IF NOT EXISTS admin_users (
+CREATE TABLE IF NOT EXISTS app_admin_users (
     admin_id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS admin_users (
 -- =====================================================
 -- 5. ELECTION SETTINGS TABLE
 -- =====================================================
-CREATE TABLE IF NOT EXISTS election_settings (
+CREATE TABLE IF NOT EXISTS app_election_settings (
     setting_id INT AUTO_INCREMENT PRIMARY KEY,
     setting_key VARCHAR(100) NOT NULL UNIQUE,
     setting_value VARCHAR(255),
@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS election_settings (
 -- =====================================================
 -- 6. VOTING LOGS TABLE (Audit & Security)
 -- =====================================================
-CREATE TABLE IF NOT EXISTS voting_logs (
+CREATE TABLE IF NOT EXISTS app_voting_logs (
     log_id INT AUTO_INCREMENT PRIMARY KEY,
     action VARCHAR(50) NOT NULL,
     voter_id VARCHAR(50),
@@ -95,15 +95,15 @@ CREATE TABLE IF NOT EXISTS voting_logs (
     action_details TEXT,
     ip_address VARCHAR(45),
     log_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (voter_id) REFERENCES voters(voter_id) ON DELETE SET NULL,
-    FOREIGN KEY (admin_id) REFERENCES admin_users(admin_id) ON DELETE SET NULL,
-    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE SET NULL
+    FOREIGN KEY (voter_id) REFERENCES app_voters(voter_id) ON DELETE SET NULL,
+    FOREIGN KEY (admin_id) REFERENCES app_admin_users(admin_id) ON DELETE SET NULL,
+    FOREIGN KEY (candidate_id) REFERENCES app_candidates(candidate_id) ON DELETE SET NULL
 );
 
 -- =====================================================
 -- 7. ELECTION STATISTICS TABLE
 -- =====================================================
-CREATE TABLE IF NOT EXISTS election_statistics (
+CREATE TABLE IF NOT EXISTS app_election_statistics (
     stat_id INT AUTO_INCREMENT PRIMARY KEY,
     total_voters INT DEFAULT 0,
     total_votes_cast INT DEFAULT 0,
@@ -118,34 +118,34 @@ CREATE TABLE IF NOT EXISTS election_statistics (
 -- =====================================================
 
 -- Voters indexes
-CREATE INDEX idx_voter_has_voted ON voters(has_voted);
-CREATE INDEX idx_voter_email ON voters(email);
-CREATE INDEX idx_voter_created ON voters(created_at);
+CREATE INDEX idx_voter_has_voted ON app_voters(has_voted);
+CREATE INDEX idx_voter_email ON app_voters(email);
+CREATE INDEX idx_voter_created ON app_voters(created_at);
 
 -- Candidates indexes
-CREATE INDEX idx_candidate_party ON candidates(party_name);
-CREATE INDEX idx_candidate_votes ON candidates(vote_count DESC);
-CREATE INDEX idx_candidate_created ON candidates(created_at);
+CREATE INDEX idx_candidate_party ON app_candidates(party_name);
+CREATE INDEX idx_candidate_votes ON app_candidates(vote_count DESC);
+CREATE INDEX idx_candidate_created ON app_candidates(created_at);
 
 -- Votes indexes
-CREATE INDEX idx_vote_voter ON votes(voter_id);
-CREATE INDEX idx_vote_candidate ON votes(candidate_id);
-CREATE INDEX idx_vote_timestamp ON votes(vote_timestamp DESC);
+CREATE INDEX idx_vote_voter ON app_votes(voter_id);
+CREATE INDEX idx_vote_candidate ON app_votes(candidate_id);
+CREATE INDEX idx_vote_timestamp ON app_votes(vote_timestamp DESC);
 
 -- Admin indexes
-CREATE INDEX idx_admin_username ON admin_users(username);
-CREATE INDEX idx_admin_active ON admin_users(is_active);
+CREATE INDEX idx_admin_username ON app_admin_users(username);
+CREATE INDEX idx_admin_active ON app_admin_users(is_active);
 
 -- Logs indexes
-CREATE INDEX idx_log_voter ON voting_logs(voter_id);
-CREATE INDEX idx_log_action ON voting_logs(action);
-CREATE INDEX idx_log_timestamp ON voting_logs(log_timestamp DESC);
+CREATE INDEX idx_log_voter ON app_voting_logs(voter_id);
+CREATE INDEX idx_log_action ON app_voting_logs(action);
+CREATE INDEX idx_log_timestamp ON app_voting_logs(log_timestamp DESC);
 
 -- =====================================================
 -- SAMPLE DATA - VOTERS
 -- =====================================================
 
-INSERT INTO voters (voter_id, voter_name, password_hash, email, phone, has_voted, voted_for) VALUES
+INSERT INTO app_voters (voter_id, voter_name, password_hash, email, phone, has_voted, voted_for) VALUES
 ('V001', 'John Smith', SHA2('voter123', 256), 'john@example.com', '555-0001', FALSE, NULL),
 ('V002', 'Jane Doe', SHA2('voter123', 256), 'jane@example.com', '555-0002', FALSE, NULL),
 ('V003', 'Mike Johnson', SHA2('voter123', 256), 'mike@example.com', '555-0003', FALSE, NULL),
@@ -156,7 +156,7 @@ INSERT INTO voters (voter_id, voter_name, password_hash, email, phone, has_voted
 -- SAMPLE DATA - CANDIDATES
 -- =====================================================
 
-INSERT INTO candidates (candidate_name, party_name, description, vote_count) VALUES
+INSERT INTO app_candidates (candidate_name, party_name, description, vote_count) VALUES
 ('Alice Johnson', 'Progressive Alliance', 'Experienced economist with 15 years in public service', 0),
 ('Bob Smith', 'Democratic Union', 'Local business owner and community leader', 0),
 ('Carol Davis', 'Green Party', 'Environmental scientist and sustainability advocate', 0),
@@ -167,7 +167,7 @@ INSERT INTO candidates (candidate_name, party_name, description, vote_count) VAL
 -- SAMPLE DATA - ADMIN USERS
 -- =====================================================
 
-INSERT INTO admin_users (username, password_hash, email, full_name, role, is_active) VALUES
+INSERT INTO app_admin_users (username, password_hash, email, full_name, role, is_active) VALUES
 ('admin', SHA2('admin123', 256), 'admin@voteflow.com', 'System Administrator', 'superadmin', TRUE),
 ('moderator1', SHA2('mod123', 256), 'mod1@voteflow.com', 'John Moderator', 'moderator', TRUE),
 ('moderator2', SHA2('mod123', 256), 'mod2@voteflow.com', 'Jane Moderator', 'moderator', TRUE);
@@ -176,7 +176,7 @@ INSERT INTO admin_users (username, password_hash, email, full_name, role, is_act
 -- SAMPLE DATA - ELECTION SETTINGS
 -- =====================================================
 
-INSERT INTO election_settings (setting_key, setting_value, setting_type, description) VALUES
+INSERT INTO app_election_settings (setting_key, setting_value, setting_type, description) VALUES
 ('election_title', 'General Election 2026', 'string', 'Title of the current election'),
 ('election_status', 'active', 'string', 'Status: pending, active, closed'),
 ('one_vote_per_person', 'true', 'boolean', 'Enforce one vote per voter'),
@@ -190,7 +190,7 @@ INSERT INTO election_settings (setting_key, setting_value, setting_type, descrip
 -- SAMPLE DATA - ELECTION STATISTICS
 -- =====================================================
 
-INSERT INTO election_statistics (total_voters, total_votes_cast, total_candidates, election_start) VALUES
+INSERT INTO app_election_statistics (total_voters, total_votes_cast, total_candidates, election_start) VALUES
 (5, 0, 5, NOW());
 
 -- =====================================================
@@ -198,33 +198,33 @@ INSERT INTO election_statistics (total_voters, total_votes_cast, total_candidate
 -- =====================================================
 
 -- View: Current Election Results
-CREATE OR REPLACE VIEW vw_election_results AS
+CREATE OR REPLACE VIEW vw_app_election_results AS
 SELECT 
     c.candidate_id,
     c.candidate_name,
     c.party_name,
     c.vote_count,
     ROUND((c.vote_count * 100.0 / 
-        GREATEST((SELECT SUM(vote_count) FROM candidates), 1)), 2) AS vote_percentage,
+        GREATEST((SELECT SUM(vote_count) FROM app_candidates), 1)), 2) AS vote_percentage,
     RANK() OVER (ORDER BY c.vote_count DESC) AS ranking,
     CASE 
         WHEN RANK() OVER (ORDER BY c.vote_count DESC) = 1 THEN 'LEADING'
         ELSE 'OTHER'
     END AS status
-FROM candidates c
+FROM app_candidates c
 ORDER BY c.vote_count DESC;
 
 -- View: Voter Statistics
-CREATE OR REPLACE VIEW vw_voter_statistics AS
+CREATE OR REPLACE VIEW vw_app_voter_statistics AS
 SELECT 
     COUNT(*) AS total_voters,
     SUM(CASE WHEN has_voted = TRUE THEN 1 ELSE 0 END) AS voters_voted,
     SUM(CASE WHEN has_voted = FALSE THEN 1 ELSE 0 END) AS voters_not_voted,
     ROUND((SUM(CASE WHEN has_voted = TRUE THEN 1 ELSE 0 END) * 100.0 / COUNT(*)), 2) AS participation_rate
-FROM voters;
+FROM app_voters;
 
 -- View: Candidate Performance
-CREATE OR REPLACE VIEW vw_candidate_performance AS
+CREATE OR REPLACE VIEW vw_app_candidate_performance AS
 SELECT 
     c.candidate_id,
     c.candidate_name,
@@ -232,8 +232,8 @@ SELECT
     c.vote_count,
     COUNT(v.vote_id) AS total_votes_recorded,
     c.created_at
-FROM candidates c
-LEFT JOIN votes v ON c.candidate_id = v.candidate_id
+FROM app_candidates c
+LEFT JOIN app_votes v ON c.candidate_id = v.candidate_id
 GROUP BY c.candidate_id, c.candidate_name, c.party_name, c.vote_count, c.created_at
 ORDER BY c.vote_count DESC;
 
@@ -255,21 +255,21 @@ BEGIN
     DECLARE voter_already_voted BOOLEAN;
     
     -- Check if voter exists
-    IF NOT EXISTS (SELECT 1 FROM voters WHERE voter_id = p_voter_id) THEN
+    IF NOT EXISTS (SELECT 1 FROM app_voters WHERE voter_id = p_voter_id) THEN
         SET p_success = FALSE;
         SET p_message = 'Voter ID not found';
         LEAVE;
     END IF;
     
     -- Check if candidate exists
-    IF NOT EXISTS (SELECT 1 FROM candidates WHERE candidate_id = p_candidate_id) THEN
+    IF NOT EXISTS (SELECT 1 FROM app_candidates WHERE candidate_id = p_candidate_id) THEN
         SET p_success = FALSE;
         SET p_message = 'Candidate not found';
         LEAVE;
     END IF;
     
     -- Check if voter has already voted
-    SET voter_already_voted = (SELECT has_voted FROM voters WHERE voter_id = p_voter_id);
+    SET voter_already_voted = (SELECT has_voted FROM app_voters WHERE voter_id = p_voter_id);
     
     IF voter_already_voted = TRUE THEN
         SET p_success = FALSE;
@@ -281,21 +281,21 @@ BEGIN
     START TRANSACTION;
     
     -- Record the vote
-    INSERT INTO votes (voter_id, candidate_id, ip_address)
+    INSERT INTO app_votes (voter_id, candidate_id, ip_address)
     VALUES (p_voter_id, p_candidate_id, p_ip_address);
     
     -- Update candidate vote count
-    UPDATE candidates 
+    UPDATE app_candidates 
     SET vote_count = vote_count + 1
     WHERE candidate_id = p_candidate_id;
     
     -- Mark voter as voted
-    UPDATE voters
+    UPDATE app_voters
     SET has_voted = TRUE, voted_for = p_candidate_id, last_login = NOW()
     WHERE voter_id = p_voter_id;
     
     -- Log the action
-    INSERT INTO voting_logs (action, voter_id, candidate_id, ip_address)
+    INSERT INTO app_voting_logs (action, voter_id, candidate_id, ip_address)
     VALUES ('VOTE_CAST', p_voter_id, p_candidate_id, p_ip_address);
     
     -- Commit transaction
@@ -312,7 +312,7 @@ DELIMITER $$
 
 CREATE PROCEDURE IF NOT EXISTS sp_get_election_results()
 BEGIN
-    SELECT * FROM vw_election_results;
+    SELECT * FROM vw_app_election_results;
 END$$
 
 DELIMITER ;
@@ -322,7 +322,7 @@ DELIMITER $$
 
 CREATE PROCEDURE IF NOT EXISTS sp_get_voter_statistics()
 BEGIN
-    SELECT * FROM vw_voter_statistics;
+    SELECT * FROM vw_app_voter_statistics;
 END$$
 
 DELIMITER ;
@@ -339,7 +339,7 @@ CREATE PROCEDURE IF NOT EXISTS sp_add_candidate(
 )
 BEGIN
     -- Check if candidate already exists
-    IF EXISTS (SELECT 1 FROM candidates WHERE candidate_name = p_candidate_name) THEN
+    IF EXISTS (SELECT 1 FROM app_candidates WHERE candidate_name = p_candidate_name) THEN
         SET p_success = FALSE;
         SET p_message = 'Candidate already exists';
         LEAVE;
@@ -353,11 +353,11 @@ BEGIN
     END IF;
     
     -- Insert candidate
-    INSERT INTO candidates (candidate_name, party_name, description, vote_count)
+    INSERT INTO app_candidates (candidate_name, party_name, description, vote_count)
     VALUES (p_candidate_name, p_party_name, p_description, 0);
     
     -- Log the action
-    INSERT INTO voting_logs (action, candidate_id, action_details)
+    INSERT INTO app_voting_logs (action, candidate_id, action_details)
     VALUES ('CANDIDATE_ADDED', LAST_INSERT_ID(), CONCAT('New candidate: ', p_candidate_name));
     
     SET p_success = TRUE;
@@ -376,24 +376,24 @@ CREATE PROCEDURE IF NOT EXISTS sp_delete_candidate(
 )
 BEGIN
     -- Check if candidate exists
-    IF NOT EXISTS (SELECT 1 FROM candidates WHERE candidate_id = p_candidate_id) THEN
+    IF NOT EXISTS (SELECT 1 FROM app_candidates WHERE candidate_id = p_candidate_id) THEN
         SET p_success = FALSE;
         SET p_message = 'Candidate not found';
         LEAVE;
     END IF;
     
     -- Delete associated votes
-    DELETE FROM votes WHERE candidate_id = p_candidate_id;
+    DELETE FROM app_votes WHERE candidate_id = p_candidate_id;
     
     -- Update voters who voted for this candidate
-    UPDATE voters SET has_voted = FALSE, voted_for = NULL 
+    UPDATE app_voters SET has_voted = FALSE, voted_for = NULL 
     WHERE voted_for = p_candidate_id;
     
     -- Delete candidate
-    DELETE FROM candidates WHERE candidate_id = p_candidate_id;
+    DELETE FROM app_candidates WHERE candidate_id = p_candidate_id;
     
     -- Log the action
-    INSERT INTO voting_logs (action, candidate_id, action_details)
+    INSERT INTO app_voting_logs (action, candidate_id, action_details)
     VALUES ('CANDIDATE_DELETED', p_candidate_id, 'Candidate deleted');
     
     SET p_success = TRUE;
@@ -410,11 +410,11 @@ DELIMITER ;
 DELIMITER $$
 
 CREATE TRIGGER trg_update_stats_on_vote
-AFTER INSERT ON votes
+AFTER INSERT ON app_votes
 FOR EACH ROW
 BEGIN
-    UPDATE election_statistics
-    SET total_votes_cast = (SELECT COUNT(*) FROM votes),
+    UPDATE app_election_statistics
+    SET total_votes_cast = (SELECT COUNT(*) FROM app_votes),
         last_updated = NOW();
 END$$
 
@@ -424,11 +424,11 @@ DELIMITER ;
 DELIMITER $$
 
 CREATE TRIGGER trg_update_stats_on_candidate_add
-AFTER INSERT ON candidates
+AFTER INSERT ON app_candidates
 FOR EACH ROW
 BEGIN
-    UPDATE election_statistics
-    SET total_candidates = (SELECT COUNT(*) FROM candidates),
+    UPDATE app_election_statistics
+    SET total_candidates = (SELECT COUNT(*) FROM app_candidates),
         last_updated = NOW();
 END$$
 
@@ -438,11 +438,11 @@ DELIMITER ;
 DELIMITER $$
 
 CREATE TRIGGER trg_update_stats_on_candidate_delete
-AFTER DELETE ON candidates
+AFTER DELETE ON app_candidates
 FOR EACH ROW
 BEGIN
-    UPDATE election_statistics
-    SET total_candidates = (SELECT COUNT(*) FROM candidates),
+    UPDATE app_election_statistics
+    SET total_candidates = (SELECT COUNT(*) FROM app_candidates),
         last_updated = NOW();
 END$$
 

@@ -13,7 +13,7 @@ if (getRequestMethod() !== 'GET') {
 // Fetch all candidates
 $stmt = $conn->prepare("
     SELECT candidate_id, candidate_name, party_name, description, vote_count
-    FROM candidates
+    FROM app_candidates
     ORDER BY candidate_name ASC
 ");
 

@@ -22,7 +22,7 @@ $password = sanitize($data['password']);
 // Prepare statement
 $stmt = $conn->prepare("
     SELECT admin_id, username, email, full_name, role, is_active
-    FROM admin_users
+    FROM app_admin_users
     WHERE username = ? AND is_active = TRUE
 ");
 

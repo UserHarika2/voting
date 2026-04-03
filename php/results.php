@@ -11,7 +11,7 @@ if (getRequestMethod() !== 'GET') {
 }
 
 // Get results from view
-$stmt = $conn->prepare("SELECT * FROM vw_election_results");
+$stmt = $conn->prepare("SELECT * FROM vw_app_election_results");
 
 if (!$stmt) {
     sendResponse(['success' => false, 'message' => 'Database error'], 500);
@@ -37,7 +37,7 @@ while ($row = $result->fetch_assoc()) {
 }
 
 // Get overall statistics
-$statsStmt = $conn->prepare("SELECT * FROM vw_voter_statistics");
+$statsStmt = $conn->prepare("SELECT * FROM vw_app_voter_statistics");
 $statsStmt->execute();
 $statsResult = $statsStmt->get_result();
 $stats = $statsResult->fetch_assoc();

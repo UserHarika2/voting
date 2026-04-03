@@ -114,7 +114,7 @@ function logAction($action, $voterId = null, $candidateId = null, $adminId = nul
     }
     
     $stmt = $conn->prepare("
-        INSERT INTO voting_logs (action, voter_id, admin_id, candidate_id, action_details, ip_address)
+        INSERT INTO app_voting_logs (action, voter_id, admin_id, candidate_id, action_details, ip_address)
         VALUES (?, ?, ?, ?, ?, ?)
     ");
     

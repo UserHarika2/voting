@@ -14,7 +14,7 @@ define('DB_CONFIG', [
     'host' => 'localhost',      // Database server
     'user' => 'voteflow_app',   // Database user
     'pass' => 'app_pass_123',   // Database password
-    'name' => 'voteflow',       // Database name
+    'name' => 'voteflow_app',   // Database name
     'port' => 3306,             // Database port
     'charset' => 'utf8mb4'      // Character set
 ]);

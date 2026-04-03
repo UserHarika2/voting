@@ -28,7 +28,7 @@ if (!isValidVoterId($voterId)) {
 // Prepare statement to prevent SQL injection
 $stmt = $conn->prepare("
     SELECT voter_id, voter_name, password_hash, has_voted, voted_for, email
-    FROM voters
+    FROM app_voters
     WHERE voter_id = ?
 ");
 
