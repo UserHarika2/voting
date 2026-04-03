@@ -1,0 +1,26 @@
+CREATE DATABASE votesphere_db;
+USE votesphere_db;
+
+CREATE TABLE tbl_candidates (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    party VARCHAR(100) NOT NULL,
+    vote_count INT DEFAULT 0
+);
+
+CREATE TABLE tbl_electors (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    voter_id VARCHAR(50) UNIQUE NOT NULL,
+    pass_hash VARCHAR(255) NOT NULL,
+    has_voted TINYINT DEFAULT 0
+);
+
+INSERT INTO tbl_electors (voter_id, pass_hash, has_voted) VALUES 
+('VOT1001', MD5('pass123'), 0),
+('VOT1002', MD5('pass123'), 0),
+('VOT1003', MD5('pass123'), 0);
+
+INSERT INTO tbl_candidates (name, party, vote_count) VALUES 
+('Alex Morgan', 'Progressive Alliance', 0),
+('Jamie Lin', 'Green Future', 0),
+('Sofia Reyes', 'Unity Coalition', 0);
