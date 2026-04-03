@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: scm-voting-deployment    # ← Fixed indentation
+  name: voting-deployment    # ← Fixed indentation
 spec:
   replicas: 2
   selector:
@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: java-app
-        image: harika1305/scm_voting:latest
+        image: harika1305/voting:latest
         ports:
         - containerPort: 8080     # ← Added port configuration
 ---
@@ -29,4 +29,4 @@ spec:
   ports:
   - port: 80
     targetPort: 8080
-    nodePort: 30009
+    nodePort: 30010
