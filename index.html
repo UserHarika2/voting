@@ -291,8 +291,8 @@
 
   let currentVoter = null;     // store voter id
   let currentAdmin = false;
-
-  // ----- Helper: load candidates for voting UI -----
+  <p>change management</p>
+    // ----- Helper: load candidates for voting UI -----
   async function loadVotingCandidates() {
     if (!currentVoter) return;
     const data = await apiRequest('api.php?action=getCandidates');
